@@ -11,6 +11,7 @@ DEPENDENCIES
 
 This module depends on the following modules:
 
+ * Farm Asset Property (included in farmOS)
  * Farm Log: Harvest (included in farmOS)
 
 INSTALLATION

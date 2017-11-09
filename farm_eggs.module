@@ -32,35 +32,6 @@ function farm_eggs_form($form, &$form_state) {
     '#description' => t('Use this form to record an egg harvest. A harvest log will be created with standard details filled in.'),
   );
 
-  // Load active groups.
-  $groups = array();
-  $query = new EntityFieldQuery();
-  $query->entityCondition('entity_type', 'farm_asset');
-  $query->entityCondition('bundle', 'group');
-  $query->propertyCondition('active', TRUE);
-  $query->propertyOrderBy('name', 'ASC');
-  $result = $query->execute();
-  if (isset($result['farm_asset'])) {
-    $group_ids = array_keys($result['farm_asset']);
-    $groups = entity_load('farm_asset', $group_ids);
-  }
-
-  // Build a list of group select options.
-  $group_options = array();
-  foreach ($groups as $group) {
-    $group_options[$group->id] = entity_label('farm_asset', $group);
-  }
-
-  // If there are groups, add checkboxes.
-  if (!empty($groups)) {
-    $form['eggs']['group'] = array(
-      '#type' => 'checkboxes',
-      '#title' => t('Group(s)'),
-      '#description' => t('Select the group(s) that these eggs came from.'),
-      '#options' => $group_options,
-    );
-  }
-
   // Quantity.
   $form['eggs']['quantity'] = array(
     '#type' => 'textfield',
@@ -68,6 +39,45 @@ function farm_eggs_form($form, &$form_state) {
     '#required' => TRUE,
     '#element_validate' => array('element_validate_integer_positive'),
   );
+
+  // Load active assets with the "farm_eggs" asset property.
+  $asset_options = array();
+  $result = db_query("SELECT a.id FROM {farm_asset_property} p LEFT JOIN {farm_asset} a ON p.id = a.id WHERE p.name = 'farm_eggs' AND a.active = 1");
+  foreach ($result as $row) {
+    if (!empty($row->id)) {
+
+      // Load the asset.
+      $asset = farm_asset_load($row->id);
+
+      // If the asset didn't load, skip it.
+      if (empty($asset)) {
+        continue;
+      }
+
+      // Add an option.
+      $asset_options[$asset->id] = entity_label('farm_asset', $asset);
+    }
+  }
+
+  // If there are asset options, add checkboxes.
+  if (!empty($asset_options)) {
+    $form['eggs']['assets'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Group/animal'),
+      '#description' => t('Select the group/animal that these eggs came from. To add groups/animals to this list, edit their record and check the "Produces eggs" checkbox.'),
+      '#options' => $asset_options,
+    );
+  }
+
+  // Otherwise, show some text about adding groups/animals.
+  else {
+    $form['eggs']['assets'] = array(
+      '#type' => 'markup',
+      '#markup' => t('If you would like to associate this egg harvest log with a group/animal asset, edit their record and check the "Produces eggs" checkbox. Then you will be able to select them here.'),
+      '#prefix' => '<p>',
+      '#suffix' => '</p>',
+    );
+  }
 
   // Submit button.
   $form['eggs']['submit'] = array(
@@ -96,16 +106,16 @@ function farm_eggs_form_submit($form, &$form_state) {
   // Set the date.
   $log_wrapper->timestamp->set(REQUEST_TIME);
 
-  // If there are groups referenced, add them to the asset reference field.
-  if (!empty($form_state['values']['group'])) {
-    foreach ($form_state['values']['group'] as $group_id) {
+  // If there are assets referenced, add them to the asset reference field.
+  if (!empty($form_state['values']['groups'])) {
+    foreach ($form_state['values']['groups'] as $asset_id) {
 
-      // Load the group.
-      $group = farm_asset_load($group_id);
+      // Load the asset.
+      $asset = farm_asset_load($asset_id);
 
       // If it loaded, add it to the asset reference.
       if (!empty($group)) {
-        $log_wrapper->field_farm_asset[] = $group;
+        $log_wrapper->field_farm_asset[] = $asset;
       }
     }
   }
@@ -163,4 +173,64 @@ function farm_eggs_form_submit($form, &$form_state) {
   $label = entity_label('log', $log);
   $uri = entity_uri('log', $log);
   drupal_set_message(t('Log created') . ': ' . l($label, $uri['path']));
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function farm_eggs_form_farm_asset_form_alter(&$form, $form_state, $form_id) {
+
+  // Get the farm asset entity from the form.
+  $asset = $form['farm_asset']['#value'];
+
+  // If the asset is not an animal or group, bail.
+  if (empty($asset->type) || !in_array($asset->type, array('animal', 'group'))) {
+    return;
+  }
+
+  // Checkbox to specify that this asset produces eggs.
+  $current_value = farm_asset_property_get($asset->id, 'farm_eggs');
+  $form['farm_eggs'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('This @asset_type produces eggs', array('@asset_type' => $asset->type)),
+    '#description' => t('Checking this box will make this asset available in the <a href="!egg_form_path">egg harvest form</a>.', array('!egg_form_path' => url('/farm/eggs'))),
+    '#default_value' => !empty($current_value) ? TRUE : FALSE,
+    '#weight' => 200,
+  );
+
+  // Add a submit handler.
+  $form['actions']['submit']['#submit'][] = 'farm_eggs_asset_form_submit';
+
+  // Add to the "General" group.
+  $form['#group_children']['farm_eggs'] = 'group_farm_general';
+}
+
+/**
+ * Submit handler for saving egg properties of an asset.
+ *
+ * @param array $form
+ *   The form array.
+ * @param array $form_state
+ *   The form state array.
+ */
+function farm_eggs_asset_form_submit(array $form, array &$form_state) {
+
+  // If an asset doesn't exist, bail.
+  if (empty($form_state['values']['farm_asset'])) {
+    return;
+  }
+
+  // Grab the asset.
+  $asset = $form_state['values']['farm_asset'];
+
+  // Get the farm_eggs property value.
+  $eggs = !empty($form_state['values']['farm_eggs']) ? TRUE : FALSE;
+
+  // Delete any existing property.
+  farm_asset_property_delete($asset->id, 'farm_eggs');
+
+  // If eggs are enabled for this asset, save the property.
+  if ($eggs) {
+    farm_asset_property_set($asset->id, 'farm_eggs',TRUE);
+  }
 }
