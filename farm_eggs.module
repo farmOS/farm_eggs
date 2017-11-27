@@ -5,6 +5,13 @@
  */
 
 /**
+ * Implements hook_farm_asset_property().
+ */
+function farm_eggs_farm_asset_property() {
+  return array('farm_eggs');
+}
+
+/**
  * Implements hook_menu().
  */
 function farm_eggs_menu() {
