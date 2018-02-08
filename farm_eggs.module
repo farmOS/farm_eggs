@@ -114,14 +114,14 @@ function farm_eggs_form_submit($form, &$form_state) {
   $log_wrapper->timestamp->set(REQUEST_TIME);
 
   // If there are assets referenced, add them to the asset reference field.
-  if (!empty($form_state['values']['groups'])) {
-    foreach ($form_state['values']['groups'] as $asset_id) {
+  if (!empty($form_state['values']['assets'])) {
+    foreach ($form_state['values']['assets'] as $asset_id) {
 
       // Load the asset.
       $asset = farm_asset_load($asset_id);
 
       // If it loaded, add it to the asset reference.
-      if (!empty($group)) {
+      if (!empty($asset)) {
         $log_wrapper->field_farm_asset[] = $asset;
       }
     }
