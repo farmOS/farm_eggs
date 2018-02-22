@@ -16,7 +16,7 @@ function farm_eggs_farm_asset_property() {
  */
 function farm_eggs_menu() {
 
-  // Produce safety dashboard.
+  // Eggs dashboard.
   $items['farm/eggs'] = array(
     'title' => 'Eggs',
     'page callback' => 'drupal_get_form',
@@ -95,6 +95,7 @@ function farm_eggs_form($form, &$form_state) {
   // Return the form.
   return $form;
 }
+
 /**
  * Submit function for egg form.
  */
