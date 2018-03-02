@@ -1,0 +1,15 @@
+<?php
+/**
+ * @file
+ * Farm eggs install.
+ */
+
+/**
+ * Install the Farm Quick Forms module.
+ */
+function farm_eggs_update_7000(&$sandbox) {
+  $module = 'farm_quick';
+  if (!module_exists($module)) {
+    module_enable(array($module));
+  }
+}
