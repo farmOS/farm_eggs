@@ -10,7 +10,7 @@
 function farm_eggs_farm_quick_forms() {
   return array(
     'eggs' => array(
-      'tab' => t('Eggs'),
+      'label' => t('Eggs'),
       'permission' => 'create farm_harvest log entities',
       'form' => 'farm_eggs_form',
       'file' => 'farm_eggs.farm_quick.inc',
