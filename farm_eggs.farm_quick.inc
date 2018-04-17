@@ -92,84 +92,37 @@ function farm_eggs_form($form, &$form_state) {
  */
 function farm_eggs_form_submit($form, &$form_state) {
 
-  // Create a new log entity.
-  $log = entity_create('log', array('type' => 'farm_harvest'));
-
-  // Create an entity wrapper for the log.
-  $log_wrapper = entity_metadata_wrapper('log', $log);
+  // The log type will be a harvest.
+  $log_type = 'farm_harvest';
 
   // Set log name.
   $log_name = t('Collected @qty egg(s)', array('@qty' => $form_state['values']['quantity']));
-  $log_wrapper->name->set($log_name);
 
-  // Set the date.
-  $log_wrapper->timestamp->set(REQUEST_TIME);
-
-  // If there are assets referenced, add them to the asset reference field.
+  // Load any assets that were selected.
+  $assets = array();
   if (!empty($form_state['values']['assets'])) {
     foreach ($form_state['values']['assets'] as $asset_id) {
 
       // Load the asset.
       $asset = farm_asset_load($asset_id);
 
-      // If it loaded, add it to the asset reference.
+      // If it loaded, add it to the array.
       if (!empty($asset)) {
-        $log_wrapper->field_farm_asset[] = $asset;
+        $assets[] = $asset;
       }
     }
   }
 
-  // Create a new quantity field_collection entity attached to the log.
-  $quantity = entity_create('field_collection_item', array('field_name' => 'field_farm_quantity'));
-  $quantity->setHostEntity('log', $log);
+  // Assemble an array of measurements.
+  $measurements = array(
+    array(
+      'measure' => 'count',
+      'value' => $form_state['values']['quantity'],
+      'units' => t('egg(s)'),
+      'label' => '',
+    ),
+  );
 
-  // Create an entity wrapper for the quantity.
-  $quantity_wrapper = entity_metadata_wrapper('field_collection_item', $quantity);
-
-  // Set the quantity measure.
-  $quantity_wrapper->field_farm_quantity_measure->set('count');
-
-  // Set the quantity value.
-  $value_fraction = fraction_from_decimal($form_state['values']['quantity']);
-  $quantity_wrapper->field_farm_quantity_value->numerator->set($value_fraction->getNumerator());
-  $quantity_wrapper->field_farm_quantity_value->denominator->set($value_fraction->getDenominator());
-
-  // Look up the units taxonomy term.
-  $units = t('egg(s)');
-  $units_terms = taxonomy_get_term_by_name($units, 'farm_quantity_units');
-
-  // If terms were found, use the first one.
-  if (!empty($units_terms)) {
-    $units_term = reset($units_terms);
-  }
-
-  // If a term wasn't found, create it.
-  else {
-    $farm_units = taxonomy_vocabulary_machine_name_load('farm_quantity_units');
-    $units_term = new stdClass();
-    $units_term->name = check_plain($units);
-    $units_term->vid = $farm_units->vid;
-    taxonomy_term_save($units_term);
-  }
-
-  // Set the quantity units.
-  $quantity_wrapper->field_farm_quantity_units = $units_term;
-
-  // Mark the log as done.
-  $log_wrapper->done->set(TRUE);
-
-  // Set the log owner.
-  global $user;
-  $log_wrapper->field_farm_log_owner[] = $user;
-
-  // Save the quantity.
-  $quantity_wrapper->save();
-
-  // Save the log.
-  $log_wrapper->save();
-
-  // Set a message.
-  $label = entity_label('log', $log);
-  $uri = entity_uri('log', $log);
-  drupal_set_message(t('Log created') . ': ' . l($label, $uri['path']));
+  // Create a new farm quantity log.
+  farm_quantity_log_create($log_type, $log_name, REQUEST_TIME, TRUE, $assets, $measurements);
 }
