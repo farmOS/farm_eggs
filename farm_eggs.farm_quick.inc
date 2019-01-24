@@ -52,8 +52,10 @@ function farm_eggs_form($form, &$form_state) {
         continue;
       }
 
-      // Add an option.
-      $asset_options[$asset->id] = entity_label('farm_asset', $asset);
+      // Add an option (linked to asset).
+      $entity_label = entity_label('farm_asset', $asset);
+      $entity_uri = entity_uri('farm_asset', $asset);
+      $asset_options[$asset->id] = l($entity_label, $entity_uri['path']);
     }
   }
 
