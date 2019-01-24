@@ -40,7 +40,7 @@ function farm_eggs_form($form, &$form_state) {
 
   // Load active assets with the "farm_eggs" asset property.
   $asset_options = array();
-  $result = db_query("SELECT a.id FROM {farm_asset_property} p LEFT JOIN {farm_asset} a ON p.id = a.id WHERE p.name = 'farm_eggs' AND a.archived IS NULL");
+  $result = db_query("SELECT a.id FROM {farm_asset_property} p LEFT JOIN {farm_asset} a ON p.id = a.id WHERE p.name = 'farm_eggs' AND a.archived = 0");
   foreach ($result as $row) {
     if (!empty($row->id)) {
 
