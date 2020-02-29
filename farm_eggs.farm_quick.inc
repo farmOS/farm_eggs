@@ -29,6 +29,16 @@ function farm_eggs_form($form, &$form_state) {
     '#title' => t('Record an egg harvest'),
     '#description' => t('Use this form to record an egg harvest. A harvest log will be created with standard details filled in.'),
   );
+ // Date select (default to now).
+  $form['eggs']['timestamp'] = array(
+    '#type' => 'date_select',
+    '#title' => t('Date'),
+    '#date_format' => 'M j Y H:i',
+    '#date_type' => DATE_FORMAT_UNIX,
+    '#date_year_range' => '-10:+3',
+    '#default_value' => REQUEST_TIME,
+    '#required' => TRUE,
+  );
 
   // Quantity.
   $form['eggs']['quantity'] = array(
@@ -93,7 +103,7 @@ function farm_eggs_form($form, &$form_state) {
  * Submit function for eggs quick form.
  */
 function farm_eggs_form_submit($form, &$form_state) {
-
+	$timestamp = strtotime($form_state['values']['timestamp']);
   // The log type will be a harvest.
   $log_type = 'farm_harvest';
 
@@ -126,7 +136,7 @@ function farm_eggs_form_submit($form, &$form_state) {
   );
 
   // Create a new farm quantity log.
-  $log = farm_quantity_log_create($log_type, $log_name, REQUEST_TIME, TRUE, $assets, $measurements);
+  $log = farm_quantity_log_create($log_type, $log_name, $timestamp, TRUE, $assets, $measurements);
 
   // Link the log to the quick form.
   farm_quick_entity_link('farm_eggs_form', 'log', $log);
