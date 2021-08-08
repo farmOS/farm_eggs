@@ -77,6 +77,11 @@ function farm_eggs_form($form, &$form_state) {
       '#description' => t('Select the group/animal that these eggs came from. To add groups/animals to this list, edit their record and check the "Produces eggs" checkbox.'),
       '#options' => $asset_options,
     );
+
+    // If there is only one option, select it by default.
+    if (count($asset_options) == 1) {
+      $form['eggs']['assets']['#default_value'] = drupal_map_assoc(array_keys($asset_options));
+    }
   }
 
   // Otherwise, show some text about adding groups/animals.
