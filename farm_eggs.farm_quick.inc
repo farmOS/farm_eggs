@@ -104,6 +104,9 @@ function farm_eggs_form($form, &$form_state) {
  */
 function farm_eggs_form_submit($form, &$form_state) {
 	$timestamp = strtotime($form_state['values']['timestamp']);
+
+  $egg_used_by = $timestamp + 2419200;
+
   // The log type will be a harvest.
   $log_type = 'farm_harvest';
 
@@ -135,9 +138,14 @@ function farm_eggs_form_submit($form, &$form_state) {
     ),
   );
 
+  $notes = t("Egg used by date: ". date("d/m/y",$egg_used_by));
+
   // Create a new farm quantity log.
-  $log = farm_quantity_log_create($log_type, $log_name, $timestamp, TRUE, $assets, $measurements);
+  $log = farm_quantity_log_create($log_type, $log_name, $timestamp, TRUE, $assets, $measurements,$notes, $categories=array("Animals"));
 
   // Link the log to the quick form.
   farm_quick_entity_link('farm_eggs_form', 'log', $log);
+
+  drupal_set_message($notes);
+
 }
