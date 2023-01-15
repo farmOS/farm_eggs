@@ -1,0 +1,12 @@
+{
+    "name": "drupal/farm_eggs",
+    "description": "Provides a simple UI for creating egg harvest logs.",
+    "type": "drupal-module",
+    "homepage": "https://www.drupal.org/project/farm_eggs",
+    "license": "GPL-2.0-or-later",
+    "support": {
+        "docs": "https://farmOS.org/guide",
+        "forum": "https://farmOS.discourse.group",
+        "chat": "https://matrix.to/#/#farmOS:matrix.org"
+    }
+}

@@ -11,14 +11,16 @@ DEPENDENCIES
 
 This module depends on the following modules:
 
- * Farm Asset Property (included in farmOS)
- * Farm Log: Harvest (included in farmOS)
+ * Group asset (included in farmOS)
+ * Animal asset (included in farmOS)
+ * Harvest log (included in farmOS)
+ * farmOS Quick Forms (included in farmOS)
 
 INSTALLATION
 ------------
 
 Install as you would normally install a contributed drupal module. See:
-http://drupal.org/documentation/install/modules-themes/modules-7 for further
+https://www.drupal.org/docs/extending-drupal/installing-modules for further
 information.
 
 MAINTAINERS
