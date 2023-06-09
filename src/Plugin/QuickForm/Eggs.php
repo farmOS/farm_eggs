@@ -109,8 +109,8 @@ class Eggs extends QuickFormBase {
     if (!empty($assetsOptions)) {
       $form['assets'] = array(
         '#type' => 'checkboxes',
-        '#title' => $this->t('Group/animal'),
-        '#description' => $this->t('Select the group/animal that these eggs came from. To add groups/animals to this list, edit their record and check the "Produces eggs" checkbox.'),
+        '#title' => $this->t('Layer asset'),
+        '#description' => $this->t('Select the layer asset that these eggs came from. To add to this list, edit their record and check the "Produces eggs" checkbox.'),
         '#options' => $assetsOptions,
       );
 
@@ -119,11 +119,11 @@ class Eggs extends QuickFormBase {
         $form['assets']['#default_value'] = array_keys($assetsOptions);
       }
     }
-    // Otherwise, show some text about adding groups/animals.
+    // Otherwise, show some text about adding assets.
     else {
       $form['assets'] = array(
         '#type' => 'markup',
-        '#markup' => $this->t('If you would like to associate this egg harvest log with a group/animal asset, edit their record and check the "Produces eggs" checkbox. Then you will be able to select them here.'),
+        '#markup' => $this->t('If you would like to associate this egg harvest log with an asset, edit their record and check the "Produces eggs" checkbox. Then you will be able to select them here.'),
         '#prefix' => '<p>',
         '#suffix' => '</p>',
       );

@@ -11,8 +11,6 @@ DEPENDENCIES
 
 This module depends on the following modules:
 
- * Group asset (included in farmOS)
- * Animal asset (included in farmOS)
  * Harvest log (included in farmOS)
  * farmOS Quick Forms (included in farmOS)
 

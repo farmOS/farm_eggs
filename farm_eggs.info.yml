@@ -4,7 +4,5 @@ type: module
 package: farmOS Contrib
 core_version_requirement: ^9 || ^10
 dependencies:
-  - farm:farm_group
-  - farm:farm_animal
   - farm:farm_harvest
   - farm:farm_quick
