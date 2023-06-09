@@ -21,7 +21,7 @@ use Psr\Container\ContainerInterface;
  *   description = @Translation("Record an egg harvest."),
  *   helpText = @Translation("Use this form to record an egg harvest. A harvest log will be created with standard details filled in."),
  *   permissions = {
- *     "create farm_harvest log entities",
+ *     "create harvest log",
  *   }
  * )
  */
