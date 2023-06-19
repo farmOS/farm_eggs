@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Drupal\farm_eggs\Plugin\QuickForm;
 
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\farm_location\AssetLocationInterface;
 use Drupal\farm_quick\Plugin\QuickForm\QuickFormBase;
@@ -45,6 +47,13 @@ class Eggs extends QuickFormBase {
   protected $assetLocation;
 
   /**
+   * The current user.
+   *
+   * @var \Drupal\Core\Session\AccountInterface
+   */
+  protected $currentUser;
+
+  /**
    * Constructs a Eggs object.
    *
    * @param array $configuration
@@ -70,11 +79,13 @@ class Eggs extends QuickFormBase {
     TranslationInterface $string_translation,
     EntityTypeManagerInterface $entity_type_manager,
     AssetLocationInterface $asset_location,
+    AccountInterface $current_user,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $messenger);
     $this->stringTranslation = $string_translation;
     $this->entityTypeManager = $entity_type_manager;
     $this->assetLocation = $asset_location;
+    $this->currentUser = $current_user;
   }
 
   /**
@@ -94,6 +105,7 @@ class Eggs extends QuickFormBase {
       $container->get('string_translation'),
       $container->get('entity_type.manager'),
       $container->get('asset.location'),
+      $container->get('current_user'),
     );
   }
 
@@ -101,6 +113,14 @@ class Eggs extends QuickFormBase {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state): array {
+
+    // Date.
+    $form['date'] = [
+      '#type' => 'datetime',
+      '#title' => $this->t('Date'),
+      '#default_value' => new DrupalDateTime('now', $this->currentUser->getTimeZone()),
+      '#required' => TRUE,
+    ];
 
     // Quantity.
     $form['quantity'] = [
@@ -150,6 +170,9 @@ class Eggs extends QuickFormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state): void {
 
+    // Get the date.
+    $timestamp = $form_state->getValue('date')->getTimestamp();
+
     // Get selected assets ids.
     $assets = array_keys(array_filter($form_state->getValue('assets') ?? []));
 
@@ -169,6 +192,7 @@ class Eggs extends QuickFormBase {
     // Create a new egg harvest log.
     $this->createLog([
       'type' => 'harvest',
+      'timestamp' => $timestamp,
       'name' => $this->t('Collected @qty egg(s)', ['@qty' => $form_state->getValue('quantity')]),
       'asset' => $assets,
       'quantity' => [

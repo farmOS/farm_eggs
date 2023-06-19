@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\farm_eggs\Kernel;
 
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Tests\farm_quick\Kernel\QuickFormTestBase;
 
 /**
@@ -53,6 +54,9 @@ class QuickEggsTest extends QuickFormTestBase {
    */
   public function testQuickEggsWithLocation() {
 
+    // Get today's date.
+    $today = new DrupalDateTime('midnight');
+
     // Create an egg producer to record harvest for.
     $chickens = $this->assetStorage->create([
       'type' => 'group',
@@ -80,6 +84,10 @@ class QuickEggsTest extends QuickFormTestBase {
 
     // Submit the egg harvest quick form.
     $this->submitQuickForm([
+      'date' => [
+        'date' => $today->format('Y-m-d'),
+        'time' => $today->format('H:i:s'),
+      ],
       'assets' => [$chickens->id() => strval($chickens->id())],
       'quantity' => 12,
     ]);
@@ -93,6 +101,7 @@ class QuickEggsTest extends QuickFormTestBase {
     /** @var \Drupal\log\Entity\LogInterface $harvestLog */
     $harvestLog = reset($harvestLogs);
     $this->assertInstanceOf('Drupal\log\Entity\LogInterface', $harvestLog);
+    $this->assertEquals($today->getTimestamp(), $harvestLog->get('timestamp')->value);
     $this->assertEquals(
       '12',
       $harvestLog->get('quantity')->referencedEntities()[0]->get('value')[0]->get('decimal')->getValue(),
