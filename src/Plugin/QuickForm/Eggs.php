@@ -11,6 +11,7 @@ use Drupal\Core\StringTranslation\TranslationInterface;
 use Drupal\farm_quick\Plugin\QuickForm\QuickFormBase;
 use Drupal\farm_quick\Traits\QuickLogTrait;
 use Psr\Container\ContainerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Eggs harvest quick form.
@@ -37,6 +38,13 @@ class Eggs extends QuickFormBase {
   protected $entityTypeManager;
 
   /**
+   * The request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  protected $requestStack;
+
+  /**
    * Constructs a Eggs object.
    *
    * @param array $configuration
@@ -51,6 +59,8 @@ class Eggs extends QuickFormBase {
    *   The string translation service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param \Symfony\Component\HttpFoundation\RequestStack $request_stack
+   *  The request stack.
    */
   public function __construct(
     array $configuration,
@@ -59,10 +69,12 @@ class Eggs extends QuickFormBase {
     MessengerInterface $messenger,
     TranslationInterface $string_translation,
     EntityTypeManagerInterface $entity_type_manager,
+    RequestStack $request_stack,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $messenger);
     $this->stringTranslation = $string_translation;
     $this->entityTypeManager = $entity_type_manager;
+    $this->requestStack = $request_stack;
   }
 
   /**
@@ -81,6 +93,7 @@ class Eggs extends QuickFormBase {
       $container->get('messenger'),
       $container->get('string_translation'),
       $container->get('entity_type.manager'),
+      $container->get('request_stack'),
     );
   }
 
@@ -96,6 +109,7 @@ class Eggs extends QuickFormBase {
       '#required' => TRUE,
       '#min' => 0,
       '#step' => 1,
+      '#default_value' => $this->requestStack->getCurrentRequest()->query->get('quantity'),
     ];
 
     // Load active assets with the "produces_eggs" field checked.
@@ -117,6 +131,16 @@ class Eggs extends QuickFormBase {
       // If there is only one option, select it by default.
       if (count($assetsOptions) === 1) {
         $form['assets']['#default_value'] = array_keys($assetsOptions);
+      }
+
+      // If assets are provided in the query params, select them by default.
+      $assetsParam = $this->requestStack->getCurrentRequest()->query->get('assets');
+      if (!empty($assetsParam)) {
+        $assetsIds = explode(',', $assetsParam);
+        $selectedAssets = array_intersect($assetsIds, array_keys($assetsOptions));
+        if (!empty($selectedAssets)) {
+          $form['assets']['#default_value'] = $selectedAssets;
+        }
       }
     }
     // Otherwise, show some text about adding assets.
