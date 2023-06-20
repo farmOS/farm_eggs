@@ -82,6 +82,9 @@ class QuickEggsTest extends QuickFormTestBase {
       'status' => 'done',
     ])->save();
 
+    // Prepare harvest notes content.
+    $notes = 'Lorem ipsum';
+
     // Submit the egg harvest quick form.
     $this->submitQuickForm([
       'date' => [
@@ -90,6 +93,10 @@ class QuickEggsTest extends QuickFormTestBase {
       ],
       'assets' => [$chickens->id() => strval($chickens->id())],
       'quantity' => 12,
+      'notes' => [
+        'value' => $notes,
+        'format' => 'default',
+      ],
     ]);
 
     // Confirm egg harvest log was created.
@@ -108,6 +115,7 @@ class QuickEggsTest extends QuickFormTestBase {
     );
     $this->assertEquals($chickens->id(), $harvestLog->get('asset')->target_id);
     $this->assertEquals($location->id(), $harvestLog->get('location')->target_id);
+    $this->assertEquals($notes, $harvestLog->get('notes')->getValue()[0]['value']);
   }
 
   /**

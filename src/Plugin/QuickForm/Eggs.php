@@ -162,6 +162,18 @@ class Eggs extends QuickFormBase {
       );
     }
 
+    // Notes.
+    $form['notes'] = [
+      '#type' => 'details',
+      '#title' => $this->t('Notes'),
+    ];
+    $form['notes']['notes'] = [
+      '#type' => 'text_format',
+      '#title' => $this->t('Notes'),
+      '#title_display' => 'invisible',
+      '#format' => 'default',
+    ];
+
     return $form;
   }
 
@@ -203,6 +215,7 @@ class Eggs extends QuickFormBase {
         ],
       ],
       'location' => $locations,
+      'notes' => $form_state->getValue('notes'),
     ]);
 
   }
