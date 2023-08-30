@@ -1,31 +1,18 @@
-FARM EGGS
-=========
+# farmOS Eggs
 
-Provides a simple UI for creating egg harvest logs.
+Provides a quick form for recording egg harvests in
+[farmOS](https://farmOS.org).
 
-This module is an add-on for the [farmOS](http://drupal.org/project/farm)
-distribution.
-
-DEPENDENCIES
-------------
-
-This module depends on the following modules:
-
- * Harvest log (included in farmOS)
- * farmOS Quick Forms (included in farmOS)
-
-INSTALLATION
-------------
+## Installation
 
 Install as you would normally install a contributed drupal module. See:
 https://www.drupal.org/docs/extending-drupal/installing-modules for further
 information.
 
-MAINTAINERS
------------
+## Maintainers
 
 Current maintainers:
- * Michael Stenta (m.stenta) - https://drupal.org/user/581414
+* Michael Stenta (m.stenta) - https://github.com/mstenta
 
 This project has been sponsored by:
- * [Farmier](http://farmier.com)
+* [Farmier](https://farmier.com)
