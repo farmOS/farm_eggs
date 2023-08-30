@@ -1,6 +1,6 @@
 {
     "name": "drupal/farm_eggs",
-    "description": "Provides a simple UI for creating egg harvest logs.",
+    "description": "Provides a quick form for recording egg harvests in farmOS.",
     "type": "drupal-module",
     "homepage": "https://www.drupal.org/project/farm_eggs",
     "license": "GPL-2.0-or-later",
