@@ -160,8 +160,10 @@ class Eggs extends QuickFormBase {
       $assetsEntities = $this->entityTypeManager->getStorage('asset')->loadMultiple($assets);
       foreach ($assetsEntities as $asset) {
         $assetLocation = $this->assetLocation->getLocation($asset);
-        $locations = array_merge($locations, $assetLocation);
+        $locations = array_merge($locations, array_map(fn($location) => $location->id(), $assetLocation));
       }
+      // Make sure each location is added only once.
+      $locations = array_values(array_unique($locations));
     }
 
     // Create a new egg harvest log.

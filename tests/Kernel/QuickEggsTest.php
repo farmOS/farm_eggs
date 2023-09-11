@@ -101,4 +101,59 @@ class QuickEggsTest extends QuickFormTestBase {
     $this->assertEquals($location->id(), $harvestLog->get('location')->target_id);
   }
 
+  /**
+   * Test eggs quick form submission for multiple assets in the same location.
+   */
+  public function testQuickEggsWithMultipleAssetsInTheSameLocation() {
+
+    // Create a location to which egg producer assets will be moved.
+    $location = $this->assetStorage->create([
+      'type' => 'structure',
+      'name' => 'Chicken Coop',
+    ]);
+    $location->save();
+
+    // Create 2 egg producers and move them to the same location.
+    $eggProducers = [];
+    for ($i = 0; $i <= 2; $i++) {
+      $eggProducer = $this->assetStorage->create([
+        'type' => 'group',
+        'name' => 'Hen ' . $i,
+        'produces_eggs' => TRUE,
+      ]);
+      $eggProducer->save();
+  
+      // Move chickens to chicken coop.
+      $this->logStorage->create([
+        'type' => 'activity',
+        'name' => 'Move Hen ' . $i . ' to Chicken Coop',
+        'asset' => $eggProducer,
+        'location' => $location,
+        'is_movement' => TRUE,
+        'status' => 'done',
+      ])->save();
+
+      $eggProducers[] = $eggProducer;
+    }
+
+    // Submit the egg harvest quick form.
+    $this->submitQuickForm([
+      'assets' => [
+        $eggProducers[0]->id() => strval($eggProducers[0]->id()),
+        $eggProducers[1]->id() => strval($eggProducers[1]->id()),
+      ],
+      'quantity' => 12,
+    ]);
+
+    // Confirm egg harvest log was created.
+    /** @var \Drupal\log\Entity\LogInterface[] $harvestLogs */
+    $harvestLogs = $this->logStorage->loadByProperties(['type' => 'harvest', 'quick' => 'eggs']);
+    $this->assertCount(1, $harvestLogs);
+    $harvestLog = reset($harvestLogs);
+
+    // Make sure the egg harvest has assigned the location only once.
+    $this->assertCount(1, $harvestLog->get('location')->getValue());
+    $this->assertEquals($location->id(), $harvestLog->get('location')->target_id);
+  }
+
 }
