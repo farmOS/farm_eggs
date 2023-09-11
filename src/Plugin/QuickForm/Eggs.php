@@ -138,7 +138,7 @@ class Eggs extends QuickFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state): void {
 
     // Get selected assets ids.
-    $assets = array_keys(array_filter($form_state->getValue('assets')));
+    $assets = array_keys(array_filter($form_state->getValue('assets') ?? []));
 
     // Create a new egg harvest log.
     $this->createLog([
