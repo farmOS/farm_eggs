@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\farm_location\AssetLocationInterface;
 use Drupal\farm_quick\Plugin\QuickForm\QuickFormBase;
 use Drupal\farm_quick\Traits\QuickLogTrait;
 use Psr\Container\ContainerInterface;
@@ -37,6 +38,13 @@ class Eggs extends QuickFormBase {
   protected $entityTypeManager;
 
   /**
+   * The asset location service.
+   *
+   * @var \Drupal\farm_location\AssetLocationInterface
+   */
+  protected $assetLocation;
+
+  /**
    * Constructs a Eggs object.
    *
    * @param array $configuration
@@ -51,6 +59,8 @@ class Eggs extends QuickFormBase {
    *   The string translation service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
+   * @param \Drupal\farm_location\AssetLocationInterface $asset_location
+   *  The asset location service.
    */
   public function __construct(
     array $configuration,
@@ -59,10 +69,12 @@ class Eggs extends QuickFormBase {
     MessengerInterface $messenger,
     TranslationInterface $string_translation,
     EntityTypeManagerInterface $entity_type_manager,
+    AssetLocationInterface $asset_location,
   ) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $messenger);
     $this->stringTranslation = $string_translation;
     $this->entityTypeManager = $entity_type_manager;
+    $this->assetLocation = $asset_location;
   }
 
   /**
@@ -81,6 +93,7 @@ class Eggs extends QuickFormBase {
       $container->get('messenger'),
       $container->get('string_translation'),
       $container->get('entity_type.manager'),
+      $container->get('asset.location'),
     );
   }
 
@@ -140,6 +153,19 @@ class Eggs extends QuickFormBase {
     // Get selected assets ids.
     $assets = array_keys(array_filter($form_state->getValue('assets') ?? []));
 
+    // Get assets locations.
+    $locations = [];
+    if (!empty($assets)) {
+      /** @var \Drupal\asset\Entity\AssetInterface[] */
+      $assetsEntities = $this->entityTypeManager->getStorage('asset')->loadMultiple($assets);
+      foreach ($assetsEntities as $asset) {
+        $assetLocation = $this->assetLocation->getLocation($asset);
+        $locations = array_merge($locations, array_map(fn($location) => $location->id(), $assetLocation));
+      }
+      // Make sure each location is added only once.
+      $locations = array_values(array_unique($locations));
+    }
+
     // Create a new egg harvest log.
     $this->createLog([
       'type' => 'harvest',
@@ -152,6 +178,7 @@ class Eggs extends QuickFormBase {
           'units' => (string) $this->t('egg(s)'),
         ],
       ],
+      'location' => $locations,
     ]);
 
   }
