@@ -8,5 +8,8 @@
         "docs": "https://farmOS.org/guide",
         "forum": "https://farmOS.discourse.group",
         "chat": "https://matrix.to/#/#farmOS:matrix.org"
+    },
+    "require": {
+        "farmos/farmos": "^2 || ^3"
     }
 }
