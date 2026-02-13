@@ -2,7 +2,7 @@ name: Farm Eggs
 description: Provides a simple UI for creating egg harvest logs.
 type: module
 package: farmOS Contrib
-core_version_requirement: ^9 || ^10
+core_version_requirement: ^11
 dependencies:
   - farm_harvest
   - farm_quick

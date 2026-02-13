@@ -10,6 +10,6 @@
         "chat": "https://matrix.to/#/#farmOS:matrix.org"
     },
     "require": {
-        "farmos/farmos": "^2 || ^3"
+        "farmos/farmos": "^4"
     }
 }

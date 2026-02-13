@@ -7,106 +7,38 @@ namespace Drupal\farm_eggs\Plugin\QuickForm;
 use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Messenger\MessengerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\TranslationInterface;
+use Drupal\Core\StringTranslation\TranslatableMarkup;
 use Drupal\farm_location\AssetLocationInterface;
+use Drupal\farm_quick\Attribute\QuickForm;
 use Drupal\farm_quick\Plugin\QuickForm\QuickFormBase;
 use Drupal\farm_quick\Traits\QuickLogTrait;
-use Psr\Container\ContainerInterface;
 
 /**
  * Eggs harvest quick form.
- *
- * @QuickForm(
- *   id = "eggs",
- *   label = @Translation("Eggs"),
- *   description = @Translation("Record an egg harvest."),
- *   helpText = @Translation("Use this form to record an egg harvest. A harvest log will be created with standard details filled in."),
- *   permissions = {
- *     "create harvest log",
- *   }
- * )
  */
+#[QuickForm(
+  id: 'eggs',
+  label: new TranslatableMarkup('Eggs'),
+  description: new TranslatableMarkup('Record an egg harvest.'),
+  helpText: new TranslatableMarkup('Use this form to record an egg harvest. A harvest log will be created with standard details filled in.'),
+  permissions: [
+    'create harvest log',
+  ],
+)]
 class Eggs extends QuickFormBase {
 
   use QuickLogTrait;
 
-  /**
-   * The entity type manager service.
-   *
-   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
-   */
-  protected $entityTypeManager;
-
-  /**
-   * The asset location service.
-   *
-   * @var \Drupal\farm_location\AssetLocationInterface
-   */
-  protected $assetLocation;
-
-  /**
-   * The current user.
-   *
-   * @var \Drupal\Core\Session\AccountInterface
-   */
-  protected $currentUser;
-
-  /**
-   * Constructs a Eggs object.
-   *
-   * @param array $configuration
-   *   A configuration array containing information about the plugin instance.
-   * @param string $plugin_id
-   *   The plugin_id for the plugin instance.
-   * @param array $plugin_definition
-   *   The plugin implementation definition.
-   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
-   *   The messenger service.
-   * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
-   *   The string translation service.
-   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
-   *   The entity type manager service.
-   * @param \Drupal\farm_location\AssetLocationInterface $asset_location
-   *  The asset location service.
-   */
   public function __construct(
     array $configuration,
     string $plugin_id,
     array $plugin_definition,
-    MessengerInterface $messenger,
-    TranslationInterface $string_translation,
     EntityTypeManagerInterface $entity_type_manager,
-    AssetLocationInterface $asset_location,
     AccountInterface $current_user,
+    protected AssetLocationInterface $assetLocation,
   ) {
-    parent::__construct($configuration, $plugin_id, $plugin_definition, $messenger);
-    $this->stringTranslation = $string_translation;
-    $this->entityTypeManager = $entity_type_manager;
-    $this->assetLocation = $asset_location;
-    $this->currentUser = $current_user;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public static function create(
-    ContainerInterface $container,
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-  ): static {
-    return new static(
-      $configuration,
-      $plugin_id,
-      $plugin_definition,
-      $container->get('messenger'),
-      $container->get('string_translation'),
-      $container->get('entity_type.manager'),
-      $container->get('asset.location'),
-      $container->get('current_user'),
-    );
+    parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $current_user);
   }
 
   /**
@@ -133,8 +65,8 @@ class Eggs extends QuickFormBase {
 
     // Load active assets with the "produces_eggs" field checked.
     $eggProducers = $this->entityTypeManager->getStorage('asset')->loadByProperties([
-      'status' => 'active',
       'produces_eggs' => TRUE,
+      'archived' => FALSE,
     ]);
     $assetsOptions = array_map(fn($asset) => $asset->toLink()->toString(), $eggProducers);
 

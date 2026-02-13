@@ -45,6 +45,7 @@ class QuickEggsTest extends QuickFormTestBase {
       'farm_location',
       'farm_quantity_standard',
       'farm_structure',
+      'farm_unit',
       'system',
     ]);
   }
